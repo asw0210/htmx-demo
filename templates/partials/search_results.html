@@ -1,0 +1,10 @@
+<div class="list">
+  <div class="list-title">Results for "{{ q }}":</div>
+  {% if matches %}
+    {% for item in matches %}
+      <div class="list-item">{{ item }}</div>
+    {% endfor %}
+  {% else %}
+    <div class="list-item muted">No matches.</div>
+  {% endif %}
+</div>

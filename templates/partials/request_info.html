@@ -1,0 +1,11 @@
+<div class="result">
+  <div><strong>Headers</strong></div>
+  {% for key, value in headers.items() %}
+    <div class="kv"><span>{{ key }}</span><span>{{ value }}</span></div>
+  {% endfor %}
+  <div class="spacer"></div>
+  <div><strong>Params</strong></div>
+  {% for key, value in params.items() %}
+    <div class="kv"><span>{{ key }}</span><span>{{ value }}</span></div>
+  {% endfor %}
+</div>

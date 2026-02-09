@@ -1,0 +1,7 @@
+<div class="result">
+  <div><strong>Request headers</strong></div>
+  {% for key, value in headers.items() %}
+    <div class="kv"><span>{{ key }}</span><span>{{ value }}</span></div>
+  {% endfor %}
+  <div class="muted">at {{ now.strftime("%H:%M:%S") }}</div>
+</div>

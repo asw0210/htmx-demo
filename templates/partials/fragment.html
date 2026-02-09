@@ -1,0 +1,16 @@
+{% if tab == "details" %}
+  <div class="result">
+    <strong>Details</strong>
+    <p>hx-push-url keeps history entries while swapping this fragment.</p>
+  </div>
+{% elif tab == "faq" %}
+  <div class="result">
+    <strong>FAQ</strong>
+    <p>This panel comes from <code>/fragment</code> with a query param.</p>
+  </div>
+{% else %}
+  <div class="result">
+    <strong>Overview</strong>
+    <p>Click another tab to push a new URL.</p>
+  </div>
+{% endif %}

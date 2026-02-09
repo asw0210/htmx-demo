@@ -1,0 +1,12 @@
+<div class="result">
+  <div><strong>Jinja + HTMX fragment</strong></div>
+  <div class="muted">Rendered at {{ now.strftime("%H:%M:%S") }}</div>
+  {% if show_tip %}
+    <div class="highlight">Tip: this fragment is server-rendered before HTMX swaps it in.</div>
+  {% endif %}
+  <ul class="list">
+    {% for topic in topics %}
+      <li><strong>{{ topic.name }}</strong> — {{ topic.detail }}</li>
+    {% endfor %}
+  </ul>
+</div>

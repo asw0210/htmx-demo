@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card">
+  <h2>{{ title }}</h2>
+  <p>
+    This page is linked with <code>hx-boost</code>, so navigating here uses HTMX
+    to swap the body without a full page reload. Open your network panel and
+    notice the headers on the request.
+  </p>
+  <p>
+    The layout is still server-rendered HTML, so it works without any HTMX at all.
+    Progressive enhancement is the default.
+  </p>
+  <a class="btn" href="/">Back to demos</a>
+</section>
+{% endblock %}

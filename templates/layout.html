@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title if title else "HTMX Teaching App" }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-head-support@2.0.5" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-preload@2.1.2" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-response-targets@2.0.4" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.4" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-ws@2.0.4" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/idiomorph@0.7.4/dist/idiomorph-ext.min.js" crossorigin="anonymous"></script>
+  </head>
+  <body hx-ext="head-support,preload,response-targets,sse,ws,morph">
+    <header class="site-header">
+      <div class="brand">
+        <div class="badge" id="oob-badge">3</div>
+        <div>
+          <h1>HTMX Teaching App</h1>
+          <p>Hands-on examples for developers who already know the web stack.</p>
+        </div>
+      </div>
+      <nav class="nav" hx-boost="true">
+        <a href="/">Home</a>
+        <a href="/page/about">About</a>
+        <a href="https://htmx.org/docs/" target="_blank" rel="noreferrer">Docs</a>
+      </nav>
+    </header>
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+    <a class="back-to-top" href="#top">Back to top</a>
+    <script>
+      // Yes, there is a little JavaScript on the "less JavaScript" page. We contain multitudes.
+      {% if guides is defined %}
+      window.HTMX_GUIDES = {{ guides | tojson }};
+      {% else %}
+      window.HTMX_GUIDES = {};
+      {% endif %}
+      function appendLog(message) {
+        const log = document.getElementById("event-log");
+        if (!log) return;
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+        entry.textContent = message;
+        log.prepend(entry);
+        const maxEntries = 8;
+        const entries = log.querySelectorAll(".log-entry");
+        if (entries.length > maxEntries) {
+          entries.forEach((node, idx) => {
+            if (idx >= maxEntries) node.remove();
+          });
+        }
+      }
+
+      function jsApiFetch() {
+        if (window.htmx) {
+          htmx.ajax("GET", "/hello?name=JS%20API", { target: "#jsapi-target" });
+        }
+      }
+
+      function jsApiTrigger() {
+        if (window.htmx) {
+          htmx.trigger("#jsapi-target", "manual");
+          appendLog("manual event triggered via htmx.trigger()");
+        }
+      }
+
+      function abortSlowRequest() {
+        if (window.htmx) {
+          htmx.trigger("#slow-request", "htmx:abort");
+          appendLog("htmx:abort sent to #slow-request");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.htmx) {
+          htmx.config.historyCacheSize = 5;
+          htmx.on("htmx:afterSwap", () => appendLog("htmx:afterSwap"));
+          htmx.on("htmx:afterRequest", () => appendLog("htmx:afterRequest"));
+          htmx.on("htmx:timeout", () => appendLog("htmx:timeout"));
+          document.body.addEventListener("demoEvent", (evt) =>
+            appendLog(`demoEvent detail: ${JSON.stringify(evt.detail)}`)
+          );
+          document.body.addEventListener("swapEvent", () =>
+            appendLog("swapEvent (HX-Trigger-After-Swap)")
+          );
+          document.body.addEventListener("settleEvent", () =>
+            appendLog("settleEvent (HX-Trigger-After-Settle)")
+          );
+        }
+
+        document.querySelectorAll(".feature-index a").forEach((link) => {
+          link.dataset.label = link.textContent.trim();
+          link.addEventListener("click", () => {
+            const targetId = link.getAttribute("href");
+            if (targetId && targetId.startsWith("#")) {
+              requestAnimationFrame(() => pulseTarget(targetId, 250));
+            }
+          });
+        });
+
+        addImplementationGuides();
+        addCopyButtons();
+        updateCompareSwap();
+        addDocLinks();
+        if (window.location.hash) {
+          requestAnimationFrame(() => pulseTarget(window.location.hash, 250));
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+          if (anchor.closest(".feature-index")) return;
+          anchor.addEventListener("click", () => {
+            const hash = anchor.getAttribute("href");
+            if (hash) {
+              requestAnimationFrame(() => pulseTarget(hash, 250));
+            }
+          });
+        });
+      });
+
+      function filterIndex(query) {
+        const term = (query || "").toLowerCase();
+        document.querySelectorAll(".feature-index ul li").forEach((item) => {
+          const link = item.querySelector("a");
+          const label = link ? link.dataset.label || link.textContent : "";
+          const text = label.toLowerCase();
+          const visible = text.includes(term);
+          item.style.display = visible ? "" : "none";
+          if (link) {
+            if (!term) {
+              link.textContent = label;
+            } else if (visible) {
+              const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+              const regex = new RegExp(`(${escaped})`, "ig");
+              link.innerHTML = label.replace(regex, "<mark>$1</mark>");
+            }
+          }
+        });
+        document.querySelectorAll(".feature-index ul").forEach((list) => {
+          const visible = Array.from(list.querySelectorAll("li")).some(
+            (li) => li.style.display !== "none"
+          );
+          list.style.display = visible ? "" : "none";
+          const header = list.previousElementSibling;
+          if (header && header.classList.contains("index-group")) {
+            header.style.display = visible ? "" : "none";
+          }
+        });
+      }
+
+      function clearIndexFilter() {
+        const input = document.getElementById("feature-filter");
+        if (!input) return;
+        input.value = "";
+        filterIndex("");
+        input.focus();
+      }
+
+      function filterGrid(query) {
+        const term = (query || "").toLowerCase();
+        const cards = Array.from(document.querySelectorAll(".grid .card"));
+        let visibleCount = 0;
+        cards.forEach((card) => {
+          const title = card.querySelector("h3");
+          const tags = card.querySelector(".tags");
+          const text = `${title ? title.textContent : ""} ${tags ? tags.textContent : ""}`.toLowerCase();
+          const visible = text.includes(term);
+          card.style.display = visible ? "" : "none";
+          if (visible) visibleCount += 1;
+        });
+        const empty = document.getElementById("grid-empty");
+        if (empty) {
+          empty.style.display = visibleCount ? "none" : "block";
+        }
+        if (term && visibleCount === 1) {
+          const onlyCard = cards.find((card) => card.style.display !== "none");
+          if (onlyCard) pulseTarget(`#${onlyCard.id}`, 150);
+        }
+      }
+
+      function clearGridFilter() {
+        const input = document.getElementById("grid-filter");
+        if (!input) return;
+        input.value = "";
+        filterGrid("");
+        input.focus();
+      }
+
+      function updateCompareSwap() {
+        const swap = document.getElementById("compare-swap");
+        const target = document.getElementById("compare-target");
+        if (!swap || !target) return;
+        const value = swap.value;
+        const targetId = target.value;
+        const btnA = document.getElementById("compare-btn-a");
+        const btnB = document.getElementById("compare-btn-b");
+        [btnA, btnB].forEach((btn) => {
+          if (!btn) return;
+          btn.setAttribute("hx-swap", value);
+          btn.setAttribute("hx-target", targetId);
+        });
+      }
+
+      function addImplementationGuides() {
+        const guides = window.HTMX_GUIDES || {};
+
+        document.querySelectorAll(".grid .card").forEach((card) => {
+          const id = card.id;
+          const guide = guides[id];
+          if (!guide) return;
+          const toggle = document.createElement("button");
+          toggle.className = "btn ghost small impl-toggle";
+          toggle.type = "button";
+          toggle.textContent = "How to implement";
+          const panel = document.createElement("div");
+          panel.className = "impl-panel";
+          const serverStub = guide.server_stub || "";
+          const serverFull = guide.server_full || "";
+          panel.innerHTML = `
+            <div class="impl-row"><span class="impl-label">HTML</span></div>
+            <pre class="code">${guide.html.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+            <div class="impl-row"><span class="impl-label">Route</span><code>${guide.route}</code></div>
+            <div class="impl-row"><span class="impl-label">Server (stub)</span></div>
+            <pre class="code">${serverStub.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+            <button class="btn ghost small impl-full-toggle" type="button">Show full handler</button>
+            <pre class="code impl-full">${serverFull.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+          `;
+          const fullToggle = panel.querySelector(".impl-full-toggle");
+          const fullBlock = panel.querySelector(".impl-full");
+          if (fullBlock) fullBlock.style.display = "none";
+          if (fullToggle && fullBlock) {
+            fullToggle.addEventListener("click", () => {
+              const open = fullBlock.style.display !== "none";
+              fullBlock.style.display = open ? "none" : "block";
+              fullToggle.textContent = open ? "Show full handler" : "Hide full handler";
+            });
+          }
+          panel.style.display = "none";
+          toggle.addEventListener("click", () => {
+            const isOpen = panel.style.display !== "none";
+            panel.style.display = isOpen ? "none" : "block";
+            toggle.textContent = isOpen ? "How to implement" : "Hide implementation";
+          });
+          const firstPara = card.querySelector("p");
+          if (firstPara) {
+            firstPara.insertAdjacentElement("afterend", toggle);
+          } else {
+            card.prepend(toggle);
+          }
+          toggle.insertAdjacentElement("afterend", panel);
+        });
+      }
+
+      function addCopyButtons() {
+        document.querySelectorAll(".guide-card pre.code").forEach((pre) => {
+          const btn = document.createElement("button");
+          btn.className = "btn ghost small copy-btn";
+          btn.type = "button";
+          btn.textContent = "Copy";
+          btn.addEventListener("click", async () => {
+            const text = pre.textContent;
+            try {
+              await navigator.clipboard.writeText(text);
+              btn.textContent = "Copied";
+              setTimeout(() => (btn.textContent = "Copy"), 1200);
+            } catch (err) {
+              btn.textContent = "Failed";
+              setTimeout(() => (btn.textContent = "Copy"), 1200);
+            }
+          });
+          pre.parentElement.insertBefore(btn, pre);
+        });
+      }
+
+      function addDocLinks() {
+        const docs = {
+          "demo-hx-get": [
+            { label: "hx-get", url: "https://htmx.org/attributes/hx-get/" },
+            { label: "hx-target", url: "https://htmx.org/attributes/hx-target/" },
+          ],
+          "demo-hx-trigger": [
+            { label: "hx-trigger", url: "https://htmx.org/attributes/hx-trigger/" },
+            { label: "hx-indicator", url: "https://htmx.org/attributes/hx-indicator/" },
+          ],
+          "demo-hx-post": [
+            { label: "hx-post", url: "https://htmx.org/attributes/hx-post/" },
+          ],
+          "demo-jinja": [
+            { label: "Jinja docs", url: "https://jinja.palletsprojects.com/en/latest/" },
+          ],
+          "demo-jinja-macros": [
+            { label: "Jinja templates", url: "https://jinja.palletsprojects.com/en/latest/templates/" },
+          ],
+          "demo-jinja-inheritance": [
+            { label: "Jinja templates", url: "https://jinja.palletsprojects.com/en/latest/templates/" },
+          ],
+          "demo-hx-swap": [
+            { label: "hx-swap", url: "https://htmx.org/attributes/hx-swap/" },
+          ],
+          "demo-compare-swaps": [
+            { label: "hx-swap", url: "https://htmx.org/attributes/hx-swap/" },
+          ],
+          "demo-poll": [
+            { label: "hx-trigger", url: "https://htmx.org/attributes/hx-trigger/" },
+          ],
+          "demo-revealed": [
+            { label: "hx-trigger", url: "https://htmx.org/attributes/hx-trigger/" },
+          ],
+          "demo-oob": [
+            { label: "hx-swap-oob", url: "https://htmx.org/attributes/hx-swap-oob/" },
+          ],
+          "demo-push-url": [
+            { label: "hx-push-url", url: "https://htmx.org/attributes/hx-push-url/" },
+          ],
+          "demo-include": [
+            { label: "hx-include", url: "https://htmx.org/attributes/hx-include/" },
+            { label: "hx-vals", url: "https://htmx.org/attributes/hx-vals/" },
+            { label: "hx-headers", url: "https://htmx.org/attributes/hx-headers/" },
+          ],
+          "demo-indicator": [
+            { label: "hx-indicator", url: "https://htmx.org/attributes/hx-indicator/" },
+          ],
+          "demo-rest": [
+            { label: "hx-delete", url: "https://htmx.org/attributes/hx-delete/" },
+            { label: "hx-put", url: "https://htmx.org/attributes/hx-put/" },
+            { label: "hx-confirm", url: "https://htmx.org/attributes/hx-confirm/" },
+          ],
+          "demo-select": [
+            { label: "hx-select", url: "https://htmx.org/attributes/hx-select/" },
+          ],
+          "demo-sync": [
+            { label: "hx-sync", url: "https://htmx.org/attributes/hx-sync/" },
+          ],
+          "demo-params": [
+            { label: "hx-params", url: "https://htmx.org/attributes/hx-params/" },
+          ],
+          "demo-preserve": [
+            { label: "hx-preserve", url: "https://htmx.org/attributes/hx-preserve/" },
+          ],
+          "demo-disabled-elt": [
+            { label: "hx-disabled-elt", url: "https://htmx.org/attributes/hx-disabled-elt/" },
+          ],
+          "demo-redirect": [
+            { label: "HX-Redirect", url: "https://htmx.org/headers/hx-redirect/" },
+          ],
+          "demo-patch": [
+            { label: "hx-patch", url: "https://htmx.org/attributes/hx-patch/" },
+          ],
+          "demo-validate": [
+            { label: "hx-validate", url: "https://htmx.org/attributes/hx-validate/" },
+          ],
+          "demo-encoding": [
+            { label: "hx-encoding", url: "https://htmx.org/attributes/hx-encoding/" },
+          ],
+          "demo-request": [
+            { label: "hx-request", url: "https://htmx.org/attributes/hx-request/" },
+          ],
+          "demo-prompt": [
+            { label: "hx-prompt", url: "https://htmx.org/attributes/hx-prompt/" },
+          ],
+          "demo-select-oob": [
+            { label: "hx-select-oob", url: "https://htmx.org/attributes/hx-select-oob/" },
+          ],
+          "demo-headers": [
+            { label: "Response headers", url: "https://htmx.org/docs/#response-headers" },
+            { label: "HX-Trigger", url: "https://htmx.org/headers/hx-trigger/" },
+          ],
+          "demo-replace-url": [
+            { label: "hx-replace-url", url: "https://htmx.org/attributes/hx-replace-url/" },
+          ],
+          "demo-inherit": [
+            { label: "hx-inherit", url: "https://htmx.org/attributes/hx-inherit/" },
+            { label: "hx-disinherit", url: "https://htmx.org/attributes/hx-disinherit/" },
+          ],
+          "demo-disable": [
+            { label: "hx-disable", url: "https://htmx.org/attributes/hx-disable/" },
+          ],
+          "demo-history": [
+            { label: "History support", url: "https://htmx.org/docs/#history" },
+            { label: "hx-history-elt", url: "https://htmx.org/attributes/hx-history-elt/" },
+          ],
+          "demo-history-optout": [
+            { label: "hx-history", url: "https://htmx.org/attributes/hx-history/" },
+          ],
+          "demo-hx-on": [
+            { label: "hx-on", url: "https://htmx.org/attributes/hx-on/" },
+          ],
+          "demo-jsapi": [
+            { label: "JS API", url: "https://htmx.org/api/" },
+          ],
+          "demo-classes": [
+            { label: "HTMX docs", url: "https://htmx.org/docs/" },
+          ],
+          "demo-preload": [
+            { label: "preload extension", url: "https://htmx.org/extensions/preload/" },
+          ],
+          "demo-response-targets": [
+            { label: "response-targets", url: "https://htmx.org/extensions/response-targets/" },
+          ],
+          "demo-head-support": [
+            { label: "head-support", url: "https://htmx.org/extensions/head-support/" },
+          ],
+          "demo-sse": [
+            { label: "sse extension", url: "https://htmx.org/extensions/sse/" },
+          ],
+          "demo-ws": [
+            { label: "ws extension", url: "https://htmx.org/extensions/ws/" },
+          ],
+          "demo-morph": [
+            { label: "idiomorph", url: "https://htmx.org/extensions/idiomorph/" },
+          ],
+        };
+
+        document.querySelectorAll(".grid .card").forEach((card) => {
+          const items = docs[card.id];
+          if (!items || items.length === 0) return;
+          const wrapper = document.createElement("div");
+          wrapper.className = "doc-links";
+          const label = document.createElement("span");
+          label.textContent = "Docs:";
+          wrapper.appendChild(label);
+          items.forEach((item, idx) => {
+            if (idx > 0) {
+              const sep = document.createElement("span");
+              sep.textContent = "•";
+              wrapper.appendChild(sep);
+            }
+            const link = document.createElement("a");
+            link.href = item.url;
+            link.target = "_blank";
+            link.rel = "noreferrer";
+            link.textContent = item.label;
+            wrapper.appendChild(link);
+          });
+          card.appendChild(wrapper);
+        });
+      }
+
+      function pulseTarget(hash, delay = 0) {
+        const target = document.querySelector(hash);
+        if (!target) return;
+        const card = target.classList.contains("card") ? target : target.closest(".card");
+        if (!card) return;
+        const run = () => {
+          card.classList.remove("pulse");
+          void card.offsetWidth;
+          card.classList.add("pulse");
+          setTimeout(() => card.classList.remove("pulse"), 1200);
+        };
+        if (delay > 0) {
+          setTimeout(run, delay);
+        } else {
+          run();
+        }
+      }
+
+      window.addEventListener("hashchange", () => {
+        if (window.location.hash) {
+          pulseTarget(window.location.hash, 250);
+        }
+      });
+    </script>
+  </body>
+</html>

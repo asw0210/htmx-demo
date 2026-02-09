@@ -1,0 +1,1021 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="intro" id="top">
+  <div>
+    <h2>What This Page Does</h2>
+    <p>
+      Every card below demonstrates a specific HTMX feature. Click, type, or submit,
+      then inspect the HTML swap in your devtools network panel.
+    </p>
+    <div class="pill-row">
+      <span class="pill">Feature Catalog</span>
+      <span class="pill">Interactive Playground</span>
+      <span class="pill">Implementation Guide</span>
+    </div>
+  </div>
+  <div class="info">
+    <div>
+      <span class="label">HX-Request Header</span>
+      <p>Requests include HX-Request: true so you can tailor responses.</p>
+    </div>
+    <div>
+      <span class="label">Server Time</span>
+      <p>{{ now if now else "Live when requested" }}</p>
+    </div>
+  </div>
+  <div class="jump">
+    <a class="btn ghost" href="#feature-index">Jump to index</a>
+    <a class="btn ghost" href="#feature-guide">Jump to guide</a>
+  </div>
+  <div class="grid-filter-row">
+    <input
+      class="input grid-filter"
+      id="grid-filter"
+      type="search"
+      placeholder="Filter demo cards..."
+      oninput="filterGrid(this.value)"
+      aria-label="Filter demo cards"
+    >
+    <button class="btn ghost small" type="button" onclick="clearGridFilter()">Clear</button>
+  </div>
+</section>
+
+<section class="layout">
+  <aside class="feature-index" id="feature-index">
+    <h3>Feature Index</h3>
+    <div class="index-filter-row">
+      <input
+        class="input index-filter"
+        id="feature-filter"
+        type="search"
+        placeholder="Filter features..."
+        oninput="filterIndex(this.value)"
+        aria-label="Filter feature index"
+      >
+      <button class="btn ghost small" type="button" onclick="clearIndexFilter()">Clear</button>
+    </div>
+    <div class="index-group">Core</div>
+    <ul>
+      <li><a href="#demo-hx-get">hx-get + hx-target</a></li>
+      <li><a href="#demo-hx-trigger">hx-trigger</a></li>
+      <li><a href="#demo-hx-post">hx-post + form</a></li>
+      <li><a href="#demo-jinja">Jinja + HTMX</a></li>
+      <li><a href="#demo-jinja-macros">Jinja macros</a></li>
+      <li><a href="#demo-jinja-inheritance">Jinja inheritance</a></li>
+      <li><a href="#demo-hx-swap">hx-swap strategies</a></li>
+      <li><a href="#demo-compare-swaps">Compare swaps</a></li>
+      <li><a href="#demo-poll">Polling</a></li>
+      <li><a href="#demo-revealed">Revealed lazy load</a></li>
+      <li><a href="#demo-oob">hx-swap-oob</a></li>
+      <li><a href="#demo-push-url">hx-push-url</a></li>
+      <li><a href="#demo-include">hx-include + hx-vals + hx-headers</a></li>
+      <li><a href="#demo-indicator">hx-indicator</a></li>
+      <li><a href="#demo-rest">hx-delete/hx-put</a></li>
+      <li><a href="#demo-select">hx-select</a></li>
+      <li><a href="#demo-sync">hx-sync</a></li>
+      <li><a href="#demo-params">hx-params</a></li>
+      <li><a href="#demo-preserve">hx-preserve</a></li>
+      <li><a href="#demo-disabled-elt">hx-disabled-elt</a></li>
+      <li><a href="#demo-redirect">HX-Redirect</a></li>
+      <li><a href="#demo-patch">hx-patch</a></li>
+      <li><a href="#demo-validate">hx-validate</a></li>
+      <li><a href="#demo-encoding">hx-encoding</a></li>
+      <li><a href="#demo-request">hx-request</a></li>
+      <li><a href="#demo-prompt">hx-prompt</a></li>
+      <li><a href="#demo-select-oob">hx-select-oob</a></li>
+      <li><a href="#demo-headers">Response headers</a></li>
+      <li><a href="#demo-replace-url">hx-replace-url</a></li>
+      <li><a href="#demo-inherit">hx-inherit/disinherit</a></li>
+      <li><a href="#demo-disable">hx-disable</a></li>
+      <li><a href="#demo-history">hx-history + hx-history-elt</a></li>
+      <li><a href="#demo-history-optout">hx-history opt-out</a></li>
+      <li><a href="#demo-hx-on">hx-on</a></li>
+      <li><a href="#demo-jsapi">JS API</a></li>
+      <li><a href="#demo-classes">Swap lifecycle classes</a></li>
+    </ul>
+    <div class="index-group">Extensions</div>
+    <ul>
+      <li><a href="#demo-preload">preload</a></li>
+      <li><a href="#demo-response-targets">response-targets</a></li>
+      <li><a href="#demo-head-support">head-support</a></li>
+      <li><a href="#demo-sse">sse</a></li>
+      <li><a href="#demo-ws">ws</a></li>
+      <li><a href="#demo-morph">morph (idiomorph)</a></li>
+    </ul>
+    <div class="index-group">Shortcuts</div>
+    <ul>
+      <li><a href="#feature-guide">Feature Guide</a></li>
+      <li><a href="#top">Back to top</a></li>
+    </ul>
+  </aside>
+
+  <section class="grid" aria-label="HTMX demos">
+  <div class="card" id="demo-hx-get">
+    <h3>hx-get + hx-target</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">request</span>
+      <span class="tag">swap</span>
+    </div>
+    <p>Fetch a fragment and replace the target element.</p>
+    <button
+      class="btn"
+      hx-get="/hello"
+      hx-target="#hello-target"
+      hx-swap="innerHTML"
+    >
+      Load greeting
+    </button>
+    <div id="hello-target" class="panel empty">Nothing yet.</div>
+  </div>
+
+  <div class="card" id="demo-hx-trigger">
+    <h3>hx-trigger + debounce</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">events</span>
+    </div>
+    <p>Search as you type with a 300ms delay and a loading indicator.</p>
+    <input
+      class="input"
+      type="search"
+      name="q"
+      placeholder="Search catalog..."
+      hx-get="/search"
+      hx-trigger="keyup changed delay:300ms"
+      hx-target="#search-results"
+      hx-indicator="#search-indicator"
+    >
+    <div class="indicator" id="search-indicator">Searching...</div>
+    <div id="search-results" class="panel">
+      {% include "partials/search_results.html" %}
+    </div>
+  </div>
+
+  <div class="card" id="demo-hx-post">
+    <h3>hx-post + form</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">forms</span>
+    </div>
+    <p>Validate without a full page reload.</p>
+    <form hx-post="/form/validate" hx-target="#validation" class="stack">
+      <input class="input" name="email" placeholder="email@site.com">
+      <input class="input" name="zipcode" placeholder="ZIP code">
+      <button class="btn" type="submit">Validate</button>
+    </form>
+    <div id="validation" class="panel empty">Awaiting input.</div>
+  </div>
+
+  <div class="card" id="demo-jinja">
+    <h3>Jinja + HTMX</h3>
+    <div class="tags">
+      <span class="tag">jinja</span>
+      <span class="tag">templates</span>
+    </div>
+    <p>Server renders a Jinja template; HTMX swaps the HTML fragment.</p>
+    <button class="btn" hx-get="/jinja-demo" hx-target="#jinja-target">
+      Render Jinja fragment
+    </button>
+    <div id="jinja-target" class="panel empty">No fragment yet.</div>
+  </div>
+
+  <div class="card" id="demo-jinja-macros">
+    <h3>Jinja macros + reuse</h3>
+    <div class="tags">
+      <span class="tag">jinja</span>
+      <span class="tag">macros</span>
+    </div>
+    <p>Macros keep partials consistent across HTMX swaps.</p>
+    <button class="btn" hx-get="/jinja-macros" hx-target="#jinja-macro-target">
+      Render macro fragment
+    </button>
+    <div id="jinja-macro-target" class="panel empty">No fragment yet.</div>
+  </div>
+
+  <div class="card" id="demo-jinja-inheritance">
+    <h3>Jinja inheritance</h3>
+    <div class="tags">
+      <span class="tag">jinja</span>
+      <span class="tag">inheritance</span>
+    </div>
+    <p>Partial templates can inherit from a base fragment.</p>
+    <button class="btn" hx-get="/jinja-inheritance" hx-target="#jinja-inherit-target">
+      Render inherited fragment
+    </button>
+    <div id="jinja-inherit-target" class="panel empty">No fragment yet.</div>
+  </div>
+
+  <div class="card" id="demo-hx-swap">
+    <h3>hx-swap strategies</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">swap</span>
+    </div>
+    <p>Swap content in different ways.</p>
+    <div class="split">
+      <button class="btn" hx-get="/counter" hx-target="#swap-demo" hx-swap="innerHTML">innerHTML</button>
+      <button class="btn" hx-get="/counter" hx-target="#swap-demo" hx-swap="outerHTML">outerHTML</button>
+      <button class="btn" hx-get="/counter" hx-target="#swap-demo" hx-swap="beforeend">beforeend</button>
+    </div>
+    <div id="swap-demo" class="panel empty">Swap target</div>
+  </div>
+
+  <div class="card" id="demo-compare-swaps">
+    <h3>Compare swap strategies</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">sandbox</span>
+    </div>
+    <p>Pick a swap strategy and target, then fire requests to compare behavior.</p>
+    <div class="stack">
+      <label class="label" for="compare-swap">Swap strategy</label>
+      <select class="input" id="compare-swap" onchange="updateCompareSwap()">
+        <option value="innerHTML">innerHTML</option>
+        <option value="outerHTML">outerHTML</option>
+        <option value="beforebegin">beforebegin</option>
+        <option value="afterbegin">afterbegin</option>
+        <option value="beforeend">beforeend</option>
+        <option value="afterend">afterend</option>
+      </select>
+      <label class="label" for="compare-target">Target</label>
+      <select class="input" id="compare-target" onchange="updateCompareSwap()">
+        <option value="#compare-target-a">Target A</option>
+        <option value="#compare-target-b">Target B</option>
+      </select>
+      <div class="split">
+        <button class="btn" id="compare-btn-a" hx-get="/counter" hx-target="#compare-target-a" hx-swap="innerHTML">
+          Trigger A
+        </button>
+        <button class="btn ghost" id="compare-btn-b" hx-get="/counter" hx-target="#compare-target-b" hx-swap="innerHTML">
+          Trigger B
+        </button>
+      </div>
+    </div>
+    <div class="panel empty" id="compare-target-a">Target A output</div>
+    <div class="panel empty" id="compare-target-b">Target B output</div>
+  </div>
+
+  <div class="card" id="demo-poll">
+    <h3>hx-trigger="every 2s"</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">polling</span>
+    </div>
+    <p>Polling keeps a section live without websockets.</p>
+    <div
+      id="poll-target"
+      class="panel"
+      hx-get="/poll"
+      hx-trigger="every 2s"
+      hx-swap="innerHTML"
+    >
+      {% include "partials/poll.html" %}
+    </div>
+  </div>
+
+  <div class="card" id="demo-revealed">
+    <h3>hx-trigger="revealed"</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">lazy</span>
+    </div>
+    <p>Lazy load only after the element scrolls into view.</p>
+    <div
+      class="panel empty"
+      hx-get="/lazy"
+      hx-trigger="revealed"
+      hx-swap="innerHTML"
+    >
+      Scroll me into view.
+    </div>
+  </div>
+
+  <div class="card" id="demo-oob">
+    <h3>hx-swap-oob</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">swap</span>
+    </div>
+    <p>Server updates multiple regions in one response.</p>
+    <button class="btn" hx-get="/oob" hx-target="#oob-target" hx-swap="innerHTML">
+      Trigger OOB swap
+    </button>
+    <div id="oob-target" class="panel empty">Watch the badge in the header.</div>
+  </div>
+
+  <div class="card" id="demo-push-url">
+    <h3>hx-push-url + fragments</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">history</span>
+    </div>
+    <p>Update the URL while swapping partial content.</p>
+    <div class="split">
+      <button class="btn" hx-get="/fragment?tab=overview" hx-target="#fragment-target" hx-push-url="true">
+        Overview
+      </button>
+      <button class="btn" hx-get="/fragment?tab=details" hx-target="#fragment-target" hx-push-url="true">
+        Details
+      </button>
+      <button class="btn" hx-get="/fragment?tab=faq" hx-target="#fragment-target" hx-push-url="true">
+        FAQ
+      </button>
+    </div>
+    <div id="fragment-target" class="panel empty">
+      {% include "partials/fragment.html" %}
+    </div>
+  </div>
+
+  <div class="card" id="demo-include">
+    <h3>hx-include + hx-vals + hx-headers</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">request</span>
+    </div>
+    <p>Send extra form inputs, add values, and custom headers.</p>
+    <div class="stack">
+      <input class="input" id="include-note" name="note" placeholder="Extra note">
+      <button
+        class="btn"
+        hx-post="/request-info"
+        hx-target="#request-info"
+        hx-include="#include-note"
+        hx-headers='{"X-Demo":"htmx-demo"}'
+        hx-vals='{"source":"hx-vals payload"}'
+      >
+        Send request
+      </button>
+    </div>
+    <div id="request-info" class="panel empty">Request details appear here.</div>
+  </div>
+
+  <div class="card" id="demo-indicator">
+    <h3>hx-indicator</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">ui</span>
+    </div>
+    <p>Show a loading state while the request is in flight.</p>
+    <button
+      class="btn"
+      hx-get="/hello?name=FastAPI"
+      hx-target="#indicator-target"
+      hx-indicator="#loading-indicator"
+    >
+      Fetch with indicator
+    </button>
+    <div id="loading-indicator" class="indicator">Loading...</div>
+    <div id="indicator-target" class="panel empty">Waiting.</div>
+  </div>
+
+  <div class="card" id="demo-rest">
+    <h3>hx-delete + hx-confirm</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">verbs</span>
+    </div>
+    <p>Simple CRUD with REST verbs.</p>
+    <div class="panel" id="todos">
+      {% include "partials/todos.html" %}
+    </div>
+    <form class="stack" hx-post="/todos" hx-target="#todos" hx-swap="innerHTML">
+      <input class="input" name="text" placeholder="Add a task">
+      <button class="btn" type="submit">Add</button>
+    </form>
+  </div>
+
+  <div class="card" id="demo-select">
+    <h3>hx-select</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">swap</span>
+    </div>
+    <p>Choose just one element from a larger response.</p>
+    <button
+      class="btn"
+      hx-get="/select-demo"
+      hx-target="#select-target"
+      hx-select="#selected-snippet"
+      hx-swap="innerHTML"
+    >
+      Fetch and select
+    </button>
+    <div id="select-target" class="panel empty">Waiting for selected snippet.</div>
+  </div>
+
+  <div class="card sync-card" id="demo-sync">
+    <h3>hx-sync</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">request</span>
+    </div>
+    <p>Cancel in-flight requests when a new one starts.</p>
+    <div class="split">
+      <button class="btn" hx-get="/sync-demo?item=Alpha" hx-target="#sync-target" hx-sync="this:replace">
+        Alpha
+      </button>
+      <button class="btn" hx-get="/sync-demo?item=Beta" hx-target="#sync-target" hx-sync="this:replace">
+        Beta
+      </button>
+      <button class="btn" hx-get="/sync-demo?item=Gamma" hx-target="#sync-target" hx-sync="this:replace">
+        Gamma
+      </button>
+    </div>
+    <div id="sync-target" class="panel empty">Click quickly to cancel prior requests.</div>
+  </div>
+
+  <div class="card" id="demo-params">
+    <h3>hx-params</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">request</span>
+    </div>
+    <p>Filter which inputs are submitted.</p>
+    <form
+      class="stack"
+      hx-get="/params-demo"
+      hx-target="#params-target"
+      hx-params="not debug"
+    >
+      <input class="input" name="focus" placeholder="Included param">
+      <input class="input" name="debug" placeholder="Filtered out">
+      <button class="btn" type="submit">Send params</button>
+    </form>
+    <div id="params-target" class="panel empty">No request yet.</div>
+  </div>
+
+  <div class="card" id="demo-preserve">
+    <h3>hx-preserve</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">swap</span>
+    </div>
+    <p>Keep user input even when the server re-renders the section.</p>
+    <button class="btn" hx-get="/preserve" hx-target="#preserve-target" hx-swap="innerHTML">
+      Refresh panel
+    </button>
+    <div id="preserve-target" class="panel">
+      {% include "partials/preserve.html" %}
+    </div>
+  </div>
+
+  <div class="card" id="demo-disabled-elt">
+    <h3>hx-disabled-elt</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">ui</span>
+    </div>
+    <p>Disable UI while a request is running.</p>
+    <button
+      class="btn"
+      hx-get="/disabled-demo"
+      hx-target="#disabled-target"
+      hx-disabled-elt="this"
+    >
+      Simulate request
+    </button>
+    <div id="disabled-target" class="panel empty">Waiting.</div>
+  </div>
+
+  <div class="card" id="demo-redirect">
+    <h3>HX-Redirect response header</h3>
+    <div class="tags">
+      <span class="tag">headers</span>
+      <span class="tag">navigation</span>
+    </div>
+    <p>Server triggers a client-side redirect.</p>
+    <button class="btn" hx-get="/redirect-demo">
+      Redirect to About
+    </button>
+    <div class="panel empty">Watch the URL and history.</div>
+  </div>
+
+  <div class="card" id="demo-patch">
+    <h3>hx-patch</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">verbs</span>
+    </div>
+    <p>Send PATCH requests with the same declarative flow.</p>
+    <button class="btn" hx-patch="/patch-demo" hx-target="#patch-target">
+      Send PATCH
+    </button>
+    <div id="patch-target" class="panel empty">Waiting.</div>
+  </div>
+
+  <div class="card" id="demo-validate">
+    <h3>hx-validate</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">forms</span>
+    </div>
+    <p>Respect browser validation before a request fires.</p>
+    <form
+      class="stack"
+      hx-post="/validate-required"
+      hx-target="#validate-target"
+      hx-validate="true"
+    >
+      <input class="input" name="username" placeholder="Required username" required>
+      <button class="btn" type="submit">Submit</button>
+    </form>
+    <div id="validate-target" class="panel empty">No submission yet.</div>
+  </div>
+
+  <div class="card" id="demo-encoding">
+    <h3>hx-encoding</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">forms</span>
+    </div>
+    <p>Swap the encoding type sent to the server.</p>
+    <form
+      class="stack"
+      hx-post="/encoding-demo"
+      hx-target="#encoding-target"
+      hx-encoding="multipart/form-data"
+    >
+      <input class="input" name="title" placeholder="Title">
+      <input class="input" type="file" name="asset">
+      <button class="btn" type="submit">Send form</button>
+    </form>
+    <div id="encoding-target" class="panel empty">No request yet.</div>
+  </div>
+
+  <div class="card" id="demo-request">
+    <h3>hx-request (timeout)</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">request</span>
+    </div>
+    <p>Configure request options per element.</p>
+    <button
+      class="btn"
+      id="slow-request"
+      hx-get="/slow"
+      hx-target="#slow-target"
+      hx-request='{"timeout":1000}'
+    >
+      Slow request (1s timeout)
+    </button>
+    <button class="btn ghost" type="button" onclick="abortSlowRequest()">
+      Abort manually
+    </button>
+    <div id="slow-target" class="panel empty">Awaiting response.</div>
+  </div>
+
+  <div class="card" id="demo-prompt">
+    <h3>hx-prompt + request headers</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">headers</span>
+    </div>
+    <p>Prompt the user and read HX headers server-side.</p>
+    <button
+      class="btn"
+      hx-get="/request-headers"
+      hx-target="#prompt-target"
+      hx-prompt="Your name?"
+    >
+      Trigger prompt
+    </button>
+    <div id="prompt-target" class="panel empty">Headers will appear here.</div>
+  </div>
+
+  <div class="card" id="demo-select-oob">
+    <h3>hx-select-oob</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">swap</span>
+    </div>
+    <p>Select out-of-band elements from the response.</p>
+    <button
+      class="btn"
+      hx-get="/select-oob"
+      hx-target="#select-oob-main"
+      hx-select="#select-oob-target"
+      hx-select-oob="#select-oob-alert"
+    >
+      Fetch and select OOB
+    </button>
+    <div id="select-oob-main" class="panel empty">Main swap target.</div>
+    <div id="select-oob-alert" class="panel empty">OOB alerts land here.</div>
+  </div>
+
+  <div class="card" id="demo-headers">
+    <h3>Response headers lab</h3>
+    <div class="tags">
+      <span class="tag">headers</span>
+      <span class="tag">events</span>
+    </div>
+    <p>Server headers can control navigation, swapping, and events.</p>
+    <div class="split">
+      <button class="btn" hx-get="/response-headers/push" hx-target="#response-target">HX-Push-Url</button>
+      <button class="btn" hx-get="/response-headers/replace" hx-target="#response-target">HX-Replace-Url</button>
+      <button class="btn" hx-get="/response-headers/location" hx-target="#response-target">HX-Location</button>
+      <button class="btn" hx-get="/response-headers/reswap" hx-target="#response-target">HX-Reswap</button>
+      <button class="btn" hx-get="/response-headers/retarget" hx-target="#response-target">HX-Retarget</button>
+      <button class="btn" hx-get="/response-headers/reselect" hx-target="#response-target">HX-Reselect</button>
+      <button class="btn" hx-get="/response-headers/trigger" hx-target="#response-target">HX-Trigger</button>
+      <button class="btn" hx-get="/response-headers/trigger-after-swap" hx-target="#response-target">
+        HX-Trigger-After-Swap
+      </button>
+      <button class="btn" hx-get="/response-headers/trigger-after-settle" hx-target="#response-target">
+        HX-Trigger-After-Settle
+      </button>
+      <button
+        class="btn danger"
+        hx-get="/response-headers/refresh"
+        hx-target="#response-target"
+        hx-confirm="This will refresh the page. Continue?"
+      >
+        HX-Refresh
+      </button>
+    </div>
+    <div id="response-target" class="panel empty">Response header swaps land here.</div>
+    <div id="response-retarget" class="panel empty">Retargeted swaps land here.</div>
+  </div>
+
+  <div class="card" id="demo-replace-url">
+    <h3>hx-replace-url</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">history</span>
+    </div>
+    <p>Replace history state instead of pushing.</p>
+    <button
+      class="btn"
+      hx-get="/fragment?tab=details"
+      hx-target="#replace-url-target"
+      hx-replace-url="true"
+    >
+      Replace URL
+    </button>
+    <div id="replace-url-target" class="panel empty">No fragment yet.</div>
+  </div>
+
+  <div class="card" id="demo-inherit">
+    <h3>Inheritance controls</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">inheritance</span>
+    </div>
+    <p>Use hx-disinherit / hx-inherit to control attribute inheritance.</p>
+    <div class="panel" hx-target="#inherit-target" hx-disinherit="*">
+      <button class="btn" hx-get="/hello?name=No%20Inherit">
+        No inherit
+      </button>
+      <button class="btn" hx-get="/hello?name=Inherit" hx-inherit="hx-target">
+        Inherit target
+      </button>
+    </div>
+    <div id="inherit-target" class="panel empty">Inherited swaps land here.</div>
+  </div>
+
+  <div class="card" id="demo-disable">
+    <h3>hx-disable</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">config</span>
+    </div>
+    <p>Disable HTMX processing for a subtree.</p>
+    <div class="panel" hx-disable>
+      <button class="btn" hx-get="/hello" hx-target="#disable-target">
+        This will not fire
+      </button>
+    </div>
+    <button class="btn ghost" hx-get="/hello?name=Enabled" hx-target="#disable-target">
+      This will fire
+    </button>
+    <div id="disable-target" class="panel empty">No swaps yet.</div>
+  </div>
+
+  <div class="card" id="demo-history">
+    <h3>History caching</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">history</span>
+    </div>
+    <p>
+      HTMX snapshots page HTML into history cache so back/forward can restore instantly.
+      Use <code>hx-history-elt</code> to scope the snapshot to a smaller element.
+    </p>
+    <div hx-history-elt="#history-target" class="panel">
+      <button
+        class="btn"
+        hx-get="/fragment?tab=overview"
+        hx-target="#history-target"
+        hx-push-url="true"
+      >
+        Update history target
+      </button>
+      <div id="history-target" class="panel empty">History element</div>
+    </div>
+    <div class="muted">Use back/forward to see cached content.</div>
+  </div>
+
+  <div class="card" id="demo-history-optout">
+    <h3>hx-history</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">history</span>
+    </div>
+    <p>Disable history snapshots when content is sensitive or should not be cached.</p>
+    <div hx-history="false" class="panel">
+      <button class="btn" hx-get="/hello?name=No%20History" hx-target="#no-history-target">
+        Swap without history
+      </button>
+      <div id="no-history-target" class="panel empty">No history snapshot.</div>
+    </div>
+  </div>
+
+  <div class="card" id="demo-hx-on">
+    <h3>hx-on + event log</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">events</span>
+    </div>
+    <p>Attach inline event handlers and monitor the HTMX event stream.</p>
+    <button
+      class="btn"
+      hx-get="/hello?name=Events"
+      hx-target="#event-target"
+      hx-on::after-request="appendLog('hx-on after-request fired')"
+    >
+      Trigger event
+    </button>
+    <div id="event-target" class="panel empty">Waiting.</div>
+    <div id="event-log" class="log">Event log</div>
+  </div>
+
+  <div class="card" id="demo-jsapi">
+    <h3>JS API + config</h3>
+    <div class="tags">
+      <span class="tag">js</span>
+      <span class="tag">config</span>
+    </div>
+    <p>Use <code>htmx.ajax</code>, <code>htmx.trigger</code>, and runtime config.</p>
+    <div class="split">
+      <button class="btn" type="button" onclick="jsApiFetch()">htmx.ajax</button>
+      <button class="btn ghost" type="button" onclick="jsApiTrigger()">htmx.trigger</button>
+    </div>
+    <div id="jsapi-target" class="panel empty">JS API results land here.</div>
+    <div class="muted">Config: historyCacheSize = 5</div>
+  </div>
+
+  <div class="card" id="demo-classes">
+    <h3>Swap lifecycle classes</h3>
+    <div class="tags">
+      <span class="tag">core</span>
+      <span class="tag">classes</span>
+    </div>
+    <p>HTMX adds classes during swap/settle you can style.</p>
+    <button class="btn" hx-get="/animate" hx-target="#class-target" hx-swap="beforeend">
+      Add item
+    </button>
+    <div id="class-target" class="panel empty">Watch new items animate.</div>
+  </div>
+
+  <div class="card" id="demo-preload">
+    <h3>preload extension</h3>
+    <div class="tags">
+      <span class="tag">extension</span>
+      <span class="tag">perf</span>
+    </div>
+    <p>Preload a request before the user clicks.</p>
+    <button
+      class="btn"
+      hx-get="/preload-info"
+      hx-target="#preload-target"
+      preload="mouseover"
+    >
+      Hover, then click
+    </button>
+    <div id="preload-target" class="panel empty">Preload info appears here.</div>
+  </div>
+
+  <div class="card" id="demo-response-targets">
+    <h3>response-targets extension</h3>
+    <div class="tags">
+      <span class="tag">extension</span>
+      <span class="tag">errors</span>
+    </div>
+    <p>Send errors to a different target based on status code.</p>
+    <div class="split">
+      <button
+        class="btn"
+        hx-get="/status-demo/ok"
+        hx-target="#status-success"
+        hx-target-422="#status-error"
+      >
+        Success
+      </button>
+      <button
+        class="btn danger"
+        hx-get="/status-demo/error"
+        hx-target="#status-success"
+        hx-target-422="#status-error"
+      >
+        Error
+      </button>
+    </div>
+    <div id="status-success" class="panel empty">Success target</div>
+    <div id="status-error" class="panel empty">Error target</div>
+  </div>
+
+  <div class="card" id="demo-head-support">
+    <h3>head-support extension</h3>
+    <div class="tags">
+      <span class="tag">extension</span>
+      <span class="tag">head</span>
+    </div>
+    <p>Merge <code>&lt;head&gt;</code> content from a fragment response.</p>
+    <button class="btn" hx-get="/head-support" hx-target="#head-target">
+      Update head
+    </button>
+    <div id="head-target" class="panel empty">Head response lands here.</div>
+  </div>
+
+  <div class="card" id="demo-sse">
+    <h3>sse extension</h3>
+    <div class="tags">
+      <span class="tag">extension</span>
+      <span class="tag">streaming</span>
+    </div>
+    <p>Stream server events into the DOM.</p>
+    <div class="panel" hx-ext="sse" sse-connect="/sse" sse-swap="message">
+      Waiting for SSE...
+    </div>
+  </div>
+
+  <div class="card" id="demo-ws">
+    <h3>ws extension</h3>
+    <div class="tags">
+      <span class="tag">extension</span>
+      <span class="tag">realtime</span>
+    </div>
+    <p>WebSocket updates with server-sent HTML.</p>
+    <div class="panel" hx-ext="ws" ws-connect="/ws">
+      <form class="stack" ws-send>
+        <input class="input" name="message" placeholder="Send a message">
+        <button class="btn" type="submit">Send</button>
+      </form>
+      <div id="ws-messages" class="stack"></div>
+    </div>
+  </div>
+
+  <div class="card" id="demo-morph">
+    <h3>idiomorph (morph) extension</h3>
+    <div class="tags">
+      <span class="tag">extension</span>
+      <span class="tag">morph</span>
+    </div>
+    <p>Smarter DOM diffs for smoother transitions.</p>
+    <button class="btn" hx-get="/morph-demo" hx-target="#morph-target" hx-swap="morph">
+      Morph content
+    </button>
+    <div id="morph-target" class="panel empty">Morph target</div>
+  </div>
+</section>
+<div id="grid-empty" class="empty-state">No demos match your filter.</div>
+</section>
+
+<section class="guide" id="feature-guide">
+  <h2>Feature Guide</h2>
+  <p>
+    This guide groups features by intent and explains when to use them.
+    Each item includes a small before/after example you can copy.
+  </p>
+  <div class="decision-flow">
+    <h3>Quick Decision Flow</h3>
+    <div class="flow-row">
+      <div class="flow-card">Need partial update? → use <code>hx-get</code> + <code>hx-target</code></div>
+      <div class="flow-card">Submitting a form? → use <code>hx-post</code></div>
+      <div class="flow-card">Want a URL change? → use <code>hx-push-url</code> or <code>hx-replace-url</code></div>
+      <div class="flow-card">Background refresh? → use <code>hx-trigger="every ..."</code></div>
+      <div class="flow-card">Only swap part of response? → use <code>hx-select</code></div>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h3>Fetch & Swap</h3>
+    <div class="guide-grid">
+      <div class="guide-card">
+        <h4>Fetch a fragment</h4>
+        <div class="guide-problem">Avoid full-page reloads for small updates.</div>
+        <div class="guide-when">When to use: partial refreshes without a full page reload.</div>
+        <div class="guide-before">Before: <code>&lt;button&gt;Load&lt;/button&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;button hx-get="/hello" hx-target="#target"&gt;Load&lt;/button&gt;</pre>
+      </div>
+      <div class="guide-card">
+        <h4>Swap strategy</h4>
+        <div class="guide-problem">Insert content precisely without custom JS.</div>
+        <div class="guide-when">When to use: insert or replace content at a specific position.</div>
+        <div class="guide-before">Before: <code>&lt;div hx-get="/x"&gt;...&lt;/div&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;div hx-get="/x" hx-swap="beforeend"&gt;...&lt;/div&gt;</pre>
+      </div>
+      <div class="guide-card">
+        <h4>Select subset</h4>
+        <div class="guide-problem">Reuse a large response but only swap part of it.</div>
+        <div class="guide-when">When to use: server returns more HTML than you want to swap.</div>
+        <div class="guide-before">Before: <code>&lt;div hx-get="/html"&gt;&lt;/div&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;div hx-get="/html" hx-select="#snippet"&gt;&lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h3>Forms & Validation</h3>
+    <div class="guide-grid">
+      <div class="guide-card">
+        <h4>Form submit</h4>
+        <div class="guide-problem">Avoid JS form handling and redirects.</div>
+        <div class="guide-when">When to use: submit form without leaving the page.</div>
+        <div class="guide-before">Before: <code>&lt;form action="/form"&gt;...&lt;/form&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;form hx-post="/form" hx-target="#out"&gt;...&lt;/form&gt;</pre>
+      </div>
+      <div class="guide-card">
+        <h4>Validation</h4>
+        <div class="guide-problem">Prevent invalid requests from firing.</div>
+        <div class="guide-when">When to use: honor native form validation rules.</div>
+        <div class="guide-before">Before: <code>&lt;form hx-post="/x"&gt;...&lt;/form&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;form hx-post="/x" hx-validate="true"&gt;...&lt;/form&gt;</pre>
+      </div>
+      <div class="guide-card">
+        <h4>Multipart encoding</h4>
+        <div class="guide-problem">Send files without custom JS.</div>
+        <div class="guide-when">When to use: file uploads or multipart payloads.</div>
+        <div class="guide-before">Before: <code>&lt;form hx-post="/x"&gt;...&lt;/form&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;form hx-post="/x" hx-encoding="multipart/form-data"&gt;...&lt;/form&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h3>Triggers & Background Updates</h3>
+    <div class="guide-grid">
+      <div class="guide-card">
+        <h4>Polling</h4>
+        <div class="guide-problem">Keep data fresh without websockets.</div>
+        <div class="guide-when">When to use: update a dashboard on a timer.</div>
+        <div class="guide-before">Before: <code>&lt;div hx-get="/poll"&gt;&lt;/div&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;div hx-get="/poll" hx-trigger="every 2s"&gt;&lt;/div&gt;</pre>
+      </div>
+      <div class="guide-card">
+        <h4>Lazy load on reveal</h4>
+        <div class="guide-problem">Reduce initial payload and speed up first paint.</div>
+        <div class="guide-when">When to use: load content only when scrolled into view.</div>
+        <div class="guide-before">Before: <code>&lt;div hx-get="/lazy"&gt;&lt;/div&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;div hx-get="/lazy" hx-trigger="revealed"&gt;&lt;/div&gt;</pre>
+      </div>
+      <div class="guide-card">
+        <h4>Debounced search</h4>
+        <div class="guide-problem">Avoid hammering the server on every keystroke.</div>
+        <div class="guide-when">When to use: live search with fewer requests.</div>
+        <div class="guide-before">Before: <code>&lt;input hx-get="/search"&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;input hx-get="/search" hx-trigger="keyup changed delay:300ms"&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h3>Navigation & History</h3>
+    <div class="guide-grid">
+      <div class="guide-card">
+        <h4>Push URL</h4>
+        <div class="guide-problem">Preserve deep links for dynamic tabs/filters.</div>
+        <div class="guide-when">When to use: update the URL for a tab or filter.</div>
+        <div class="guide-before">Before: <code>&lt;button hx-get="/tab"&gt;Tab&lt;/button&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;button hx-get="/tab" hx-push-url="true"&gt;Tab&lt;/button&gt;</pre>
+      </div>
+      <div class="guide-card">
+        <h4>Replace URL</h4>
+        <div class="guide-problem">Prevent history spam for minor state changes.</div>
+        <div class="guide-when">When to use: update URL without adding a history entry.</div>
+        <div class="guide-before">Before: <code>&lt;button hx-get="/tab"&gt;Tab&lt;/button&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;button hx-get="/tab" hx-replace-url="true"&gt;Tab&lt;/button&gt;</pre>
+      </div>
+      <div class="guide-card">
+        <h4>History control</h4>
+        <div class="guide-problem">Avoid caching large or sensitive DOM snapshots.</div>
+        <div class="guide-when">When to use: reduce history cache size in large pages.</div>
+        <div class="guide-before">Before: <code>&lt;div&gt;...&lt;/div&gt;</code></div>
+        <div class="guide-after">After:</div>
+        <pre class="code">&lt;div hx-history="false"&gt;...&lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

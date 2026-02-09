@@ -1,0 +1,8 @@
+{% import "partials/_macros.html" as ui %}
+<div class="result">
+  <div><strong>Jinja macros + template reuse</strong></div>
+  <div class="muted">Rendered at {{ now.strftime("%H:%M:%S") }}</div>
+  {% for alert in alerts %}
+    {{ ui.callout(alert.kind, alert.message) }}
+  {% endfor %}
+</div>

@@ -1,0 +1,9 @@
+<div class="result">
+  <div class="muted">Base fragment rendered at {{ now.strftime("%H:%M:%S") }}</div>
+  <div class="highlight">
+    {% block title %}{% endblock %}
+  </div>
+  <div>
+    {% block body %}{% endblock %}
+  </div>
+</div>

@@ -1,0 +1,5 @@
+<div class="result">
+  <div>Content-Type: <strong>{{ content_type }}</strong></div>
+  <div>Fields: {{ fields | join(", ") if fields else "none" }}</div>
+  <div class="muted">at {{ now.strftime("%H:%M:%S") }}</div>
+</div>

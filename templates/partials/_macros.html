@@ -1,0 +1,6 @@
+{% macro callout(kind, message) %}
+  <div class="callout {{ kind }}">
+    <strong>{{ kind | upper }}</strong>
+    <span>{{ message }}</span>
+  </div>
+{% endmacro %}

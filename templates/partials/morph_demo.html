@@ -1,0 +1,9 @@
+<div class="result">
+  <div><strong>Morph list</strong></div>
+  <ul class="morph-list">
+    {% for item in order %}
+      <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+  <div class="muted">at {{ now.strftime("%H:%M:%S") }}</div>
+</div>

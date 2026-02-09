@@ -1,0 +1,31 @@
+{% if error %}
+  <div class="alert">{{ error }}</div>
+{% endif %}
+<div class="todo-list">
+  {% for todo in todos %}
+    <div class="todo-row {% if todo.done %}done{% endif %}">
+      <div class="todo-text">{{ todo.text }}</div>
+      <div class="todo-actions">
+        <button
+          class="btn ghost"
+          hx-put="/todos/{{ todo.id }}"
+          hx-target="#todos"
+          hx-swap="innerHTML"
+        >
+          {{ "Undo" if todo.done else "Done" }}
+        </button>
+        <button
+          class="btn danger"
+          hx-delete="/todos/{{ todo.id }}"
+          hx-target="#todos"
+          hx-swap="innerHTML"
+          hx-confirm="Delete this task?"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  {% else %}
+    <div class="muted">No tasks yet.</div>
+  {% endfor %}
+</div>
