@@ -83,3 +83,20 @@ Those route stubs are derived from the actual handlers in `main.py` at runtime.
 Each panel also includes a toggle to reveal the full handler source.
 Every demo card includes links to the official documentation for that feature.
 The Feature Guide now includes a "Problem solved" line for each item.
+
+## Async Dashboard (Worker Simulation)
+The async dashboard demonstrates how to append tiles to a page as background workers complete.
+It simulates five workers that each sleep 10–90 seconds and then publish a tile.
+
+How it works:
+1. `GET /page/async-dashboard` creates a new `run_id` and starts five background tasks.
+2. The page renders an empty `#async-tiles` container and a polling element.
+3. The browser polls `GET /async-dashboard/poll?run_id=...` every second.
+4. The server returns only new tiles since the last `offset`.
+5. HTMX appends those tiles with `hx-swap="beforeend"` and updates the `offset` via OOB swap.
+6. When all workers are done, the poller is replaced with “All workers finished.”
+
+Key HTMX features used:
+- `hx-trigger="every 1s"` for polling
+- `hx-swap="beforeend"` for incremental append
+- `hx-swap-oob` to update hidden state and stop polling

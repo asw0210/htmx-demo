@@ -3,6 +3,9 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+import random
+import time
+import uuid
 from datetime import datetime
 from threading import Lock
 from time import sleep
@@ -73,6 +76,9 @@ jinja_alerts = [
     {"kind": "info", "message": "Macros can be shared across partials."},
 ]
 
+async_runs_lock = Lock()
+async_runs: dict[str, dict[str, Any]] = {}
+
 GUIDE_DEMOS: dict[str, dict[str, Any]] = {}
 _GUIDES_CACHE: dict[str, dict[str, str]] | None = None
 
@@ -111,6 +117,31 @@ def _build_guides() -> dict[str, dict[str, str]]:
     return guides
 
 
+def _start_async_run() -> str:
+    run_id = str(uuid.uuid4())
+    with async_runs_lock:
+        async_runs[run_id] = {"created": datetime.now(), "results": [], "total": 5}
+    for idx in range(1, 6):
+        asyncio.create_task(asyncio.to_thread(_async_worker, run_id, idx))
+    return run_id
+
+
+def _async_worker(run_id: str, worker_id: int) -> None:
+    duration = random.randint(10, 90)
+    time.sleep(duration)
+    payload = {
+        "worker_id": worker_id,
+        "duration": duration,
+        "completed_at": datetime.now().strftime("%H:%M:%S"),
+        "summary": f"Worker {worker_id} finished after {duration}s.",
+    }
+    with async_runs_lock:
+        run = async_runs.get(run_id)
+        if not run:
+            return
+        run["results"].append(payload)
+
+
 @app.get("/")
 def home(request: Request) -> HTMLResponse:
     now = datetime.now()
@@ -129,6 +160,12 @@ def home(request: Request) -> HTMLResponse:
 @app.get("/page/about")
 def about(request: Request) -> HTMLResponse:
     return render(request, "page.html", title="About This Demo")
+
+
+@app.get("/page/async-dashboard")
+async def async_dashboard(request: Request) -> HTMLResponse:
+    run_id = _start_async_run()
+    return render(request, "async_dashboard.html", run_id=run_id)
 
 
 @app.get("/hello")
@@ -390,6 +427,31 @@ def morph_demo(request: Request) -> HTMLResponse:
         if morph_flip:
             order = list(reversed(order))
     return render(request, "partials/morph_demo.html", order=order, now=datetime.now())
+
+
+@app.get("/async-dashboard/poll")
+def async_dashboard_poll(request: Request, run_id: str, offset: int = 0) -> HTMLResponse:
+    with async_runs_lock:
+        run = async_runs.get(run_id)
+        if not run:
+            return render(
+                request,
+                "partials/async_tiles.html",
+                tiles=[],
+                done=True,
+                next_offset=offset,
+            )
+        results = run["results"]
+        total = run["total"]
+    new_tiles = results[offset:]
+    done = offset + len(new_tiles) >= total
+    return render(
+        request,
+        "partials/async_tiles.html",
+        tiles=new_tiles,
+        done=done,
+        next_offset=offset + len(new_tiles),
+    )
 
 
 @app.get("/animate")

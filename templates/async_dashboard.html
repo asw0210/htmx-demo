@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card">
+  <h2>Async Worker Dashboard</h2>
+  <p>
+    Five worker threads sleep for a random 10–90 seconds and then report back.
+    The dashboard starts empty and tiles are appended as workers complete.
+  </p>
+  <div id="async-tiles" class="tiles"></div>
+  <input type="hidden" id="async-offset" name="offset" value="0">
+  <div
+    id="async-poller"
+    hx-get="/async-dashboard/poll?run_id={{ run_id }}"
+    hx-trigger="every 1s"
+    hx-target="#async-tiles"
+    hx-swap="beforeend"
+    hx-include="#async-offset"
+  >
+    <div class="muted">Waiting for workers...</div>
+  </div>
+</section>
+{% endblock %}

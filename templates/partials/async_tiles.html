@@ -1,0 +1,23 @@
+{% if tiles %}
+  {% for tile in tiles %}
+    <div class="tile">
+      <div class="tile-header">Worker {{ tile.worker_id }}</div>
+      <div class="tile-body">{{ tile.summary }}</div>
+      <div class="tile-meta">Completed at {{ tile.completed_at }}</div>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<input
+  type="hidden"
+  id="async-offset"
+  name="offset"
+  value="{{ next_offset }}"
+  hx-swap-oob="true"
+>
+
+{% if done %}
+  <div id="async-poller" hx-swap-oob="true">
+    <div class="muted">All workers finished.</div>
+  </div>
+{% endif %}
